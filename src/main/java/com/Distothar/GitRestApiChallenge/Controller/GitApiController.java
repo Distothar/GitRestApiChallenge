@@ -14,6 +14,6 @@ public class GitApiController {
                                               @RequestHeader("Accept") String headerInfo)
     {
         //ToDO Validate RequestHeaderInfo
-        return GitRequestHelper.getUserRepositories(userName);
+        return GitRequestHelper.getUserRepositoriesAndBranches(userName);
     }
 }
