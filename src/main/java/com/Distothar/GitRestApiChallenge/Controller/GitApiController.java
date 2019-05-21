@@ -1,19 +1,24 @@
 package com.Distothar.GitRestApiChallenge.Controller;
 
-import com.Distothar.GitRestApiChallenge.Entity.GitRepository;
 import com.Distothar.GitRestApiChallenge.Helper.GitRequestHelper;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/")
 public class GitApiController {
-    @GetMapping("/GetGitUser/{userName}")
-    public List<GitRepository> getGitUserData(@PathVariable("userName") String userName,
-                                              @RequestHeader("Accept") String headerInfo)
+
+    @GetMapping(value = "/GetGitUser/{userName}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Object> getGitUserData(@PathVariable("userName") String userName,
+                                                             @RequestHeader("Accept") String headerInfo)
     {
         //ToDO Validate RequestHeaderInfo
         return GitRequestHelper.getUserRepositoriesAndBranches(userName);
+
+        return new ResponseEntity<Object>(GitRequestHelper.getUserRepositoriesAndBranches(userName), new HttpHeaders(), HttpStatus.OK);
     }
+
 }

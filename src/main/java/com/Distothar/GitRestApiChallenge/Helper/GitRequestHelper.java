@@ -21,6 +21,7 @@ public class GitRequestHelper {
             URL url = new URL("https://api.github.com/users/" + userName + "/repos");
             JSONArray jsonArray = JsonImportHelper.parseJsonObjectFromUrl(url);
             if (jsonArray != null)
+                //ToDO using threads to iterate over the array
                 for (int i = 0; i < jsonArray.length(); i++) {
                     JSONObject jsonObject = jsonArray.getJSONObject(i);
                     if (!jsonObject.getBoolean("fork")) {
