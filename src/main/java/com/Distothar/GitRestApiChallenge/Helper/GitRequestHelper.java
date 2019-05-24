@@ -5,53 +5,81 @@ import com.Distothar.GitRestApiChallenge.Entity.GitRepository;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-
 public class GitRequestHelper {
 
-    public static List<GitRepository> getUserRepositoriesAndBranches(String userName) {
-        List<GitRepository> gitRepositories = new ArrayList<GitRepository>();
+    public static ResponseEntity<Object> getGitUserData(String userName) {
         try {
+
             URL url = new URL("https://api.github.com/users/" + userName + "/repos");
-            JSONArray jsonArray = JsonImportHelper.parseJsonObjectFromUrl(url);
-            if (jsonArray != null)
-                //ToDO using threads to iterate over the array
-                for (int i = 0; i < jsonArray.length(); i++) {
-                    JSONObject jsonObject = jsonArray.getJSONObject(i);
-                    if (!jsonObject.getBoolean("fork")) {
-                        GitRepository gitRepo = JsonImportHelper.parseJsonObjectAsGitRepository(jsonObject);
-                        gitRepo.setBranches(getBranchesForRepository(userName, gitRepo.getRepositoryName()));
-                        if (gitRepo != null)
-                            gitRepositories.add(gitRepo);
-                    }
-                }
+            HttpStatus status = getGitApiRequestResponseStatus(url);
+
+            if (status == HttpStatus.OK)
+                return getData(userName, url);
+            if (status == HttpStatus.NOT_FOUND)
+                return RestErrorHandler.handleInvalidOperation("UserNotFound", status);
+            if (status == HttpStatus.FORBIDDEN)
+                return RestErrorHandler.handleInvalidOperation(status.toString(), status);
         }
-        catch (IOException | JSONException e)
+        catch (Exception e)
         {
-            e.printStackTrace();
+            return RestErrorHandler.handleUnexpectedError(e);
         }
-        return gitRepositories;
+
+        return null;
     }
 
-    public static List<GitBranch> getBranchesForRepository(String userName, String repositoryName)
-    {
-        List<GitBranch> gitBranches = new ArrayList<GitBranch>();
-        try
-        {
-            URL url = new URL("https://api.github.com/repos/" + userName + "/" + repositoryName + "/branches");
-            JSONArray jsonArray = JsonImportHelper.parseJsonObjectFromUrl(url);
-            gitBranches = JsonImportHelper.parseJsonObjectAsGitBranchList(jsonArray);
+    //region privateProperties
+    public static HttpStatus getGitApiRequestResponseStatus(URL url) throws IOException {
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod("GET");
+        connection.connect();
+        String statusField = connection.getHeaderField("Status");
+        connection.disconnect();
+
+        return ValidationHelper.validateHttpStatusFromString(statusField);
+    }
+
+    private static ResponseEntity<Object> getData(String userName, URL url) throws JSONException, IOException {
+        List<GitRepository> gitRepositories = new ArrayList<GitRepository>();
+
+        JSONArray jsonArray = JsonImportHelper.parseJsonObjectFromUrl(url);
+        if (!ValidationHelper.validateJsonArray(jsonArray))
+            return RestErrorHandler.handleInvalidOperation("Unexpected Error", HttpStatus.INTERNAL_SERVER_ERROR);
+
+        //ToDO using threads to iterate over the array
+        for (int i = 0; i < jsonArray.length(); i++) {
+            JSONObject jsonObject = jsonArray.getJSONObject(i);
+            if (!jsonObject.getBoolean("fork")) {
+                GitRepository gitRepo = JsonImportHelper.parseJsonObjectAsGitRepository(jsonObject);
+                gitRepo.setBranches(getBranches(userName, gitRepo.getRepositoryName()));
+                if (gitRepo != null)
+                    gitRepositories.add(gitRepo);
+            }
         }
-        catch (MalformedURLException e)
-        {
-            e.printStackTrace();
-        }
+        ResponseEntity<Object> responseEntity = new ResponseEntity<Object>(gitRepositories, new HttpHeaders(), HttpStatus.OK);
+
+        return responseEntity;
+    }
+
+
+    public static List<GitBranch> getBranches(String userName, String repositoryName) throws IOException, JSONException {
+        List<GitBranch> gitBranches;
+
+        URL url = new URL("https://api.github.com/repos/" + userName + "/" + repositoryName + "/branches");
+        JSONArray jsonArray = JsonImportHelper.parseJsonObjectFromUrl(url);
+        gitBranches = JsonImportHelper.parseJsonObjectAsGitBranchList(jsonArray);
+
         return gitBranches;
     }
+    //endregion
 }

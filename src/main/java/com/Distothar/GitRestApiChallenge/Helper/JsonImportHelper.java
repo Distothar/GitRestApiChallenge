@@ -15,74 +15,41 @@ import java.util.List;
 
 public class JsonImportHelper {
 
-    public static JSONArray parseJsonObjectFromUrl(URL url)
-    {
+    public static JSONArray parseJsonObjectFromUrl(URL url) throws IOException, JSONException {
         BufferedReader reader = null;
-        try
-        {
-            reader = new BufferedReader(new InputStreamReader(url.openStream()));
-            StringBuffer buffer = new StringBuffer();
-            int read;
-            char[] chars = new char[1024];
-            while ((read = reader.read(chars)) != -1)
-                buffer.append(chars, 0, read);
-            return new JSONArray(buffer.toString());
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-        finally
-        {
-            if(reader != null)
-            {
-                try
-                {
-                    reader.close();
-                }
-                catch (IOException e)
-                {
-                    e.printStackTrace();
-                }
-            }
-        }
-        return null;
+        reader = new BufferedReader(new InputStreamReader(url.openStream()));
+        StringBuffer buffer = new StringBuffer();
+        int read;
+        char[] chars = new char[1024];
+        while ((read = reader.read(chars)) != -1)
+            buffer.append(chars, 0, read);
+        reader.close();
+
+        JSONArray jsonArray = new JSONArray(buffer.toString());
+
+        return jsonArray;
     }
 
-    public static GitRepository parseJsonObjectAsGitRepository(JSONObject jsonObject)
-    {
-        try
-        {
-            String gitRepoName = jsonObject.getString("name");
-            String gitRepoOwnerLogin = jsonObject.getJSONObject("owner").getString("login");
+    public static GitRepository parseJsonObjectAsGitRepository(JSONObject jsonObject) throws JSONException {
+        String gitRepoName = jsonObject.getString("name");
+        String gitRepoOwnerLogin = jsonObject.getJSONObject("owner").getString("login");
 
-            return new GitRepository(gitRepoName, gitRepoOwnerLogin, null);
-        }
-        catch (JSONException e)
-        {
-            e.printStackTrace();
-        }
-        return null;
+        GitRepository repository = new GitRepository(gitRepoName, gitRepoOwnerLogin, null);
+
+        return repository;
     }
 
-    public static List<GitBranch> parseJsonObjectAsGitBranchList(JSONArray jsonArray)
-    {
+    public static List<GitBranch> parseJsonObjectAsGitBranchList(JSONArray jsonArray) throws JSONException {
         List<GitBranch> gitBranches = new ArrayList<GitBranch>();
-        try
-        {
-            for(int i = 0; i < jsonArray.length(); i++)
-            {
-                JSONObject jsonObject = jsonArray.getJSONObject(i);
-                String branchName = jsonObject.getString("name");
-                String lastCommitSha = jsonObject.getJSONObject("commit").getString("sha");
-                GitBranch gitBranch = new GitBranch(branchName, lastCommitSha);
-                gitBranches.add(gitBranch);
-            }
+
+        for (int i = 0; i < jsonArray.length(); i++) {
+            JSONObject jsonObject = jsonArray.getJSONObject(i);
+            String branchName = jsonObject.getString("name");
+            String lastCommitSha = jsonObject.getJSONObject("commit").getString("sha");
+            GitBranch gitBranch = new GitBranch(branchName, lastCommitSha);
+            gitBranches.add(gitBranch);
         }
-        catch (JSONException e)
-        {
-            e.printStackTrace();
-        }
+
         return gitBranches;
     }
 }
