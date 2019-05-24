@@ -46,14 +46,14 @@ public class GitRequestHelper {
         String statusField = connection.getHeaderField("Status");
         connection.disconnect();
 
-        return ValidationHelper.validateHttpStatusFromString(statusField);
+        return determineHttpStatusFromString(statusField);
     }
 
     private static ResponseEntity<Object> getData(String userName, URL url) throws JSONException, IOException {
         List<GitRepository> gitRepositories = new ArrayList<GitRepository>();
 
-        JSONArray jsonArray = JsonImportHelper.parseJsonObjectFromUrl(url);
-        if (!ValidationHelper.validateJsonArray(jsonArray))
+        JSONArray jsonArray = JsonImportHelper.parseJsonArrayFromUrl(url);
+        if (!validateJsonArray(jsonArray))
             return RestErrorHandler.handleInvalidOperation("Unexpected Error", HttpStatus.INTERNAL_SERVER_ERROR);
 
         //ToDO using threads to iterate over the array
@@ -76,10 +76,26 @@ public class GitRequestHelper {
         List<GitBranch> gitBranches;
 
         URL url = new URL("https://api.github.com/repos/" + userName + "/" + repositoryName + "/branches");
-        JSONArray jsonArray = JsonImportHelper.parseJsonObjectFromUrl(url);
+        JSONArray jsonArray = JsonImportHelper.parseJsonArrayFromUrl(url);
         gitBranches = JsonImportHelper.parseJsonObjectAsGitBranchList(jsonArray);
 
         return gitBranches;
+    }
+    private static HttpStatus determineHttpStatusFromString(String status){
+        if(status.contains("200 OK"))
+            return HttpStatus.OK;
+        if(status.contains("404 Not Found"))
+            return HttpStatus.NOT_FOUND;
+        if(status.contains("403 Forbidden"))
+            return HttpStatus.FORBIDDEN;
+
+        return null;
+    }
+    private static boolean validateJsonArray(JSONArray jsonArray) {
+        if (jsonArray == null)
+            return false;
+
+        return true;
     }
     //endregion
 }
