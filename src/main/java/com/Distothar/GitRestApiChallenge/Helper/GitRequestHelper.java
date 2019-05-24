@@ -76,7 +76,6 @@ public class GitRequestHelper {
         if (!validateJsonArray(jsonArray))
             return RestErrorHandler.handleInvalidOperation("Unexpected Error", HttpStatus.INTERNAL_SERVER_ERROR);
 
-        //ToDO using threads to iterate over the array
         for (int i = 0; i < jsonArray.length(); i++) {
             JSONObject jsonObject = jsonArray.getJSONObject(i);
             if (!jsonObject.getBoolean("fork")) {
