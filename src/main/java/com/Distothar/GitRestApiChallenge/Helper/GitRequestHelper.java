@@ -70,12 +70,11 @@ public class GitRequestHelper {
      * @throws IOException
      */
     private static ResponseEntity<Object> getData(String userName, URL url) throws JSONException, IOException {
-        List<GitRepository> gitRepositories = new ArrayList<GitRepository>();
-
         JSONArray jsonArray = JsonImportHelper.parseJsonArrayFromUrl(url);
         if (!validateJsonArray(jsonArray))
             return RestErrorHandler.handleInvalidOperation("Unexpected Error", HttpStatus.INTERNAL_SERVER_ERROR);
 
+        List<GitRepository> gitRepositories = new ArrayList<GitRepository>();
         for (int i = 0; i < jsonArray.length(); i++) {
             JSONObject jsonObject = jsonArray.getJSONObject(i);
             if (!jsonObject.getBoolean("fork")) {
