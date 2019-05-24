@@ -15,7 +15,14 @@ import java.util.List;
 
 public class JsonImportHelper {
 
-    public static JSONArray parseJsonObjectFromUrl(URL url) throws IOException, JSONException {
+    /**
+     * parses a JSONArray from the given url
+     * @param url
+     * @return JSONArray
+     * @throws IOException
+     * @throws JSONException
+     */
+    public static JSONArray parseJsonArrayFromUrl(URL url) throws IOException, JSONException {
         BufferedReader reader = null;
         reader = new BufferedReader(new InputStreamReader(url.openStream()));
         StringBuffer buffer = new StringBuffer();
@@ -30,6 +37,12 @@ public class JsonImportHelper {
         return jsonArray;
     }
 
+    /**
+     * Parse a JSONObject as GitRepository
+     * @param jsonObject
+     * @return GitRepository
+     * @throws JSONException
+     */
     public static GitRepository parseJsonObjectAsGitRepository(JSONObject jsonObject) throws JSONException {
         String gitRepoName = jsonObject.getString("name");
         String gitRepoOwnerLogin = jsonObject.getJSONObject("owner").getString("login");
@@ -39,6 +52,12 @@ public class JsonImportHelper {
         return repository;
     }
 
+    /**
+     * Parse a JSONObject as List of GitBranch
+     * @param jsonArray
+     * @return List<GitBranch>
+     * @throws JSONException
+     */
     public static List<GitBranch> parseJsonObjectAsGitBranchList(JSONArray jsonArray) throws JSONException {
         List<GitBranch> gitBranches = new ArrayList<GitBranch>();
 

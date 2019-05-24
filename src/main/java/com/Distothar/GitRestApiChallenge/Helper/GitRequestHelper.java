@@ -17,6 +17,11 @@ import java.util.List;
 
 public class GitRequestHelper {
 
+    /**
+     * gets UserData from Git
+     * @param userName
+     * @return ResponseEntity
+     */
     public static ResponseEntity<Object> getGitUserData(String userName) {
         try {
 
@@ -39,6 +44,13 @@ public class GitRequestHelper {
     }
 
     //region privateProperties
+
+    /**
+     * Connects to URL to check the responseStatus
+     * @param url
+     * @return HttpStatus of ResponseStatus
+     * @throws IOException
+     */
     public static HttpStatus getGitApiRequestResponseStatus(URL url) throws IOException {
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("GET");
@@ -49,6 +61,14 @@ public class GitRequestHelper {
         return determineHttpStatusFromString(statusField);
     }
 
+    /**
+     * Reads JsonArray from URL
+     * @param userName
+     * @param url
+     * @return responseEntity containing an JsonArray of all Repositories of @userName
+     * @throws JSONException
+     * @throws IOException
+     */
     private static ResponseEntity<Object> getData(String userName, URL url) throws JSONException, IOException {
         List<GitRepository> gitRepositories = new ArrayList<GitRepository>();
 
@@ -71,7 +91,14 @@ public class GitRequestHelper {
         return responseEntity;
     }
 
-
+    /**
+     * Parses all Branches of the given repository
+     * @param userName
+     * @param repositoryName
+     * @return List of GitBranches
+     * @throws IOException
+     * @throws JSONException
+     */
     public static List<GitBranch> getBranches(String userName, String repositoryName) throws IOException, JSONException {
         List<GitBranch> gitBranches;
 
@@ -81,6 +108,13 @@ public class GitRequestHelper {
 
         return gitBranches;
     }
+
+
+    /**
+     * Determine HttpStatus from the given String
+     * @param status
+     * @return HttpStatus
+     */
     private static HttpStatus determineHttpStatusFromString(String status){
         if(status.contains("200 OK"))
             return HttpStatus.OK;
@@ -91,6 +125,12 @@ public class GitRequestHelper {
 
         return null;
     }
+
+    /**
+     * Validates a JSONArray: returns true if it is valid, else false
+     * @param jsonArray
+     * @return boolean
+     */
     private static boolean validateJsonArray(JSONArray jsonArray) {
         if (jsonArray == null)
             return false;
