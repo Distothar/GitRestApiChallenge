@@ -18,16 +18,8 @@ public class GitRepository
         return repositoryName;
     }
 
-    public void setRepositoryName(String repositoryName) {
-        this.repositoryName = repositoryName;
-    }
-
     public String getOwnerLogin() {
         return ownerLogin;
-    }
-
-    public void setOwnerLogin(String ownerLogin) {
-        this.ownerLogin = ownerLogin;
     }
 
     public List<GitBranch> getBranches() {
